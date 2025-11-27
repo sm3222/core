@@ -143,50 +143,5 @@ jobs:
           arch: ${{ matrix.arch }}
           wheels-key: ${{ secrets.WHEELS_KEY }}
           env-file: true
-          apk: "libffi-dev;openssl-dev;yaml-dev;nasm;zlib-ng-dev"
-          skip-binary: aiohttp;multidict;propcache;yarl;SQLAlchemy
-          constraints: "homeassistant/package_constraints.txt"
-          requirements-diff: "requirements_diff.txt"
+          apk: "mariadb-dev;postgresql-dev;libffi-dev"
           requirements: "requirements.txt"
-
-  integrations:
-    name: Build wheels ${{ matrix.abi }} for ${{ matrix.arch }}
-    if: github.repository_owner == 'home-assistant'
-    needs: init
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix: *matrix-build
-    steps:
-      - *checkout
-
-      - *download-env-file
-
-      - *download-requirements-diff
-
-      - name: Download requirements_all_wheels
-        uses: *actions-download-artifact
-        with:
-          name: requirements_all_wheels
-
-      - name: Adjust build env
-        run: |
-          # Do not pin numpy in wheels building
-          sed -i "/numpy/d" homeassistant/package_constraints.txt
-          # Don't build wheels for uv as uv requires a greater version of rust as currently available on alpine
-          sed -i "/uv/d" requirements.txt
-          sed -i "/uv/d" requirements_diff.txt
-
-      - name: Build wheels
-        uses: *home-assistant-wheels
-        with:
-          abi: ${{ matrix.abi }}
-          tag: musllinux_1_2
-          arch: ${{ matrix.arch }}
-          wheels-key: ${{ secrets.WHEELS_KEY }}
-          env-file: true
-          apk: "bluez-dev;libffi-dev;openssl-dev;glib-dev;eudev-dev;libxml2-dev;libxslt-dev;libpng-dev;libjpeg-turbo-dev;tiff-dev;gmp-dev;mpfr-dev;mpc1-dev;ffmpeg-dev;yaml-dev;openblas-dev;fftw-dev;lapack-dev;gfortran;blas-dev;eigen-dev;freetype-dev;glew-dev;harfbuzz-dev;hdf5-dev;libdc1394-dev;libtbb-dev;mesa-dev;openexr-dev;openjpeg-dev;uchardet-dev;nasm;zlib-ng-dev"
-          skip-binary: aiohttp;charset-normalizer;grpcio;multidict;SQLAlchemy;propcache;protobuf;pymicro-vad;yarl
-          constraints: "homeassistant/package_constraints.txt"
-          requirements-diff: "requirements_diff.txt"
-          requirements: "requirements_all.txt"
